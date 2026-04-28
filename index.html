@@ -5,35 +5,29 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Meteo in Locarno</title>
-    <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-
-        body {
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            min-height: 100vh;
-            background-color: #f0f0f0;
-            font-family: Arial, sans-serif;
-        }
-
-        .box {
-            width: 400px;
-            height: 300px;
-            background-color: white;
-            border: 2px solid #ccc;
-            border-radius: 8px;
-            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
-        }
-    </style>
+    <link rel="stylesheet" href="styles.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
 </head>
 
 <body>
-    <div class="box">Hello</div>
+    <div class="container">
+        <div id="loading"> Loading weather data...</div>
+        <div id="error"></div>
+
+        <section id="current-weather"></section>
+
+        <h2 class="hourly-section-title">24-Hour Forecast</h2>
+        <div class="chart-container">
+            <canvas id="hourlyChart"></canvas>
+        </div>
+
+        <h2 class="chart-section-title">7-Day Forecast Chart</h2>
+        <div class="chart-container">
+            <canvas id="temperatureChart"></canvas>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
 </body>
 
 </html>
