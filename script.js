@@ -190,7 +190,7 @@ function renderChart(labels, maxTemps, minTemps, precipitation) {
         },
         options: {
             responsive: true,
-            maintainAspectRatio: true,
+            maintainAspectRatio: false,
             interaction: {
                 mode: 'index',
                 intersect: false
@@ -297,7 +297,7 @@ function renderHourlyChart(labels, temperatures, precipitation) {
         },
         options: {
             responsive: true,
-            maintainAspectRatio: true,
+            maintainAspectRatio: false,
             interaction: {
                 mode: 'index',
                 intersect: false
