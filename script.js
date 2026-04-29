@@ -2,6 +2,7 @@
 const LATITUDE = 46.1703;
 const LONGITUDE = 8.7881;
 const API_URL = 'https://api.open-meteo.com/v1/forecast';
+const DAILY_FORECAST_DAYS = 10;
 
 // WMO Weather Code to description mapping
 const weatherCodes = {
@@ -35,6 +36,19 @@ function getWeatherDescription(code) {
     return weatherCodes[code] || '🌡️ Inconnu';
 }
 
+function generateLegendLabelsWithFillColor(chart) {
+    const labels = Chart.defaults.plugins.legend.labels.generateLabels(chart);
+
+    labels.forEach(label => {
+        const dataset = chart.data.datasets[label.datasetIndex];
+
+        label.fillStyle = dataset.legendBackgroundColor || dataset.backgroundColor;
+        label.strokeStyle = dataset.borderColor;
+    });
+
+    return labels;
+}
+
 async function fetchWeather() {
     const loadingEl = document.getElementById('loading');
     const errorEl = document.getElementById('error');
@@ -52,6 +66,7 @@ async function fetchWeather() {
             current: 'temperature_2m,relative_humidity_2m,wind_speed_10m,weather_code',
             hourly: 'temperature_2m,precipitation_probability',
             daily: 'temperature_2m_max,temperature_2m_min,precipitation_sum',
+            forecast_days: DAILY_FORECAST_DAYS,
             timezone: 'auto'
         });
 
@@ -116,11 +131,11 @@ async function fetchWeather() {
         const minTemps = daily.temperature_2m_min;
         const precipitation = daily.precipitation_sum;
 
-        // Prepare chart data (first 7 days)
-        const chartDays = dailyTimes.slice(0, 7).map(d => new Date(d).toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' }));
-        const chartMaxTemps = maxTemps.slice(0, 7);
-        const chartMinTemps = minTemps.slice(0, 7);
-        const chartPrecip = precipitation.slice(0, 7);
+        // Prepare chart data
+        const chartDays = dailyTimes.slice(0, DAILY_FORECAST_DAYS).map(d => new Date(d).toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' }));
+        const chartMaxTemps = maxTemps.slice(0, DAILY_FORECAST_DAYS);
+        const chartMinTemps = minTemps.slice(0, DAILY_FORECAST_DAYS);
+        const chartPrecip = precipitation.slice(0, DAILY_FORECAST_DAYS);
 
         renderChart(chartDays, chartMaxTemps, chartMinTemps, chartPrecip);
 
@@ -139,6 +154,7 @@ async function fetchWeather() {
 
 function renderChart(labels, maxTemps, minTemps, precipitation) {
     const ctx = document.getElementById('temperatureChart');
+    const tempRangeFillColor = 'rgba(243, 156, 18, 0.2)';
 
     if (window.tempChart instanceof Chart) {
         window.tempChart.destroy();
@@ -153,41 +169,48 @@ function renderChart(labels, maxTemps, minTemps, precipitation) {
                 {
                     label: 'Température max (°C)',
                     data: maxTemps,
-                    borderColor: '#ff6b6b',
-                    backgroundColor: 'rgba(255, 107, 107, 0.1)',
+                    borderColor: 'rgba(255, 99, 71, 0.8)',
+                    backgroundColor: tempRangeFillColor,
+                    legendBackgroundColor: 'rgba(255, 99, 71, 0.2)',
                     borderWidth: 2,
-                    fill: false,
+                    fill: {
+                        target: 1,
+                        above: tempRangeFillColor,
+                        below: tempRangeFillColor
+                    },
                     tension: 0.4,
-                    pointRadius: 3,
+                    pointRadius: 2,
                     pointHoverRadius: 5,
-                    pointBackgroundColor: '#ff6b6b',
+                    pointBackgroundColor: 'rgba(255, 99, 71, 0.8)',
+                    pointBorderColor: 'rgba(255, 99, 71, 0.8)',
                     yAxisID: 'y'
                 },
                 {
                     label: 'Température min (°C)',
                     data: minTemps,
-                    borderColor: '#4ecdc4',
-                    backgroundColor: 'rgba(78, 205, 196, 0.1)',
+                    borderColor: '#f39c12',
+                    backgroundColor: 'rgba(255, 208, 0, 0.2)',
                     borderWidth: 2,
                     fill: false,
                     tension: 0.4,
                     pointRadius: 2,
                     pointHoverRadius: 5,
-                    pointBackgroundColor: '#4ecdc4',
+                    pointBackgroundColor: '#f39c12',
+                    pointBorderColor: '#f39c12',
                     yAxisID: 'y'
                 },
                 {
                     label: 'Précipitations (mm)',
                     data: precipitation,
-                    borderColor: '#95a5a6',
-                    backgroundColor: 'rgba(149, 165, 166, 0.2)',
+                    borderColor: 'rgba(0,150,255,0.8)',
+                    backgroundColor: 'rgba(0,150,255,0.2)',
                     borderWidth: 2,
-                    borderDash: [5, 5],
                     fill: true,
                     tension: 0.4,
                     pointRadius: 2,
                     pointHoverRadius: 5,
-                    pointBackgroundColor: '#95a5a6',
+                    pointBackgroundColor: 'rgba(0,150,255,0.8)',
+                    pointBorderColor: 'rgba(0,150,255,0.8)',
                     yAxisID: 'y1'
                 }
             ]
@@ -207,12 +230,13 @@ function renderChart(labels, maxTemps, minTemps, precipitation) {
                         font: {
                             size: 12
                         },
-                        usePointStyle: true
+                        usePointStyle: true,
+                        generateLabels: generateLegendLabelsWithFillColor
                     }
                 },
                 title: {
                     display: true,
-                    text: 'Prévisions météo 7 jours',
+                    text: `Prévisions météo ${DAILY_FORECAST_DAYS} jours`,
                     font: {
                         size: 14,
                         weight: 'bold'
@@ -242,7 +266,7 @@ function renderChart(labels, maxTemps, minTemps, precipitation) {
                     position: 'right',
                     title: {
                         display: true,
-                        text: 'Probabilité de précipitation (%)',
+                        text: 'Précipitations (mm)',
                         font: {
                             size: 12,
                             weight: 'bold'
@@ -276,13 +300,14 @@ function renderHourlyChart(labels, temperatures, precipitation) {
                     label: 'Température (°C)',
                     data: temperatures,
                     borderColor: '#f39c12',
-                    backgroundColor: 'rgba(243, 156, 18, 0.1)',
+                    backgroundColor: 'rgba(243, 156, 18, 0.2)',
                     borderWidth: 2,
                     fill: true,
                     tension: 0.4,
                     pointRadius: 2,
                     pointHoverRadius: 5,
                     pointBackgroundColor: '#f39c12',
+                    pointBorderColor: '#f39c12',
                     yAxisID: 'y'
                 },
                 {
@@ -291,12 +316,12 @@ function renderHourlyChart(labels, temperatures, precipitation) {
                     borderColor: '#3498db',
                     backgroundColor: 'rgba(52, 152, 219, 0.15)',
                     borderWidth: 2,
-                    borderDash: [5, 5],
                     fill: true,
                     tension: 0.4,
                     pointRadius: 2,
                     pointHoverRadius: 5,
                     pointBackgroundColor: '#3498db',
+                    pointBorderColor: '#3498db',
                     yAxisID: 'y1'
                 }
             ]
@@ -316,7 +341,8 @@ function renderHourlyChart(labels, temperatures, precipitation) {
                         font: {
                             size: 12
                         },
-                        usePointStyle: true
+                        usePointStyle: true,
+                        generateLabels: generateLegendLabelsWithFillColor
                     }
                 },
                 title: {

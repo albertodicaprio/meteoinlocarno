@@ -5,13 +5,14 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Météo à Locarno</title>
+    <link rel="icon" href="favicon.ico" type="image/x-icon">
     <link rel="stylesheet" href="styles.css">
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
 </head>
 
 <body>
     <div class="container">
-        <div id="loading">⏳ Chargement des données météo...</div>
+        <div id="loading"> Chargement des données météo...</div>
         <div id="error"></div>
 
         <section id="current-weather"></section>
@@ -23,7 +24,7 @@
             </div>
         </section>
 
-        <h2 class="chart-section-title">Prévisions 7 jours</h2>
+        <h2 class="chart-section-title">Prévisions 10 jours</h2>
         <div class="chart-container">
             <canvas id="temperatureChart"></canvas>
         </div>
