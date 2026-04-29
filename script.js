@@ -132,7 +132,7 @@ async function fetchWeather() {
         const precipitation = daily.precipitation_sum;
 
         // Prepare chart data
-        const chartDays = dailyTimes.slice(0, DAILY_FORECAST_DAYS).map(d => new Date(d).toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' }));
+        const chartDays = dailyTimes.slice(0, DAILY_FORECAST_DAYS).map(d => new Date(d).toLocaleDateString('fr-CH', { weekday: 'short', month: 'short', day: 'numeric' }));
         const chartMaxTemps = maxTemps.slice(0, DAILY_FORECAST_DAYS);
         const chartMinTemps = minTemps.slice(0, DAILY_FORECAST_DAYS);
         const chartPrecip = precipitation.slice(0, DAILY_FORECAST_DAYS);
