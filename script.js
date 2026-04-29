@@ -5,34 +5,34 @@ const API_URL = 'https://api.open-meteo.com/v1/forecast';
 
 // WMO Weather Code to description mapping
 const weatherCodes = {
-    0: '☀️ Clear',
-    1: '🌤️ Mostly Clear',
-    2: '⛅ Partly Cloudy',
-    3: '☁️ Overcast',
-    45: '🌫️ Foggy',
-    48: '🌫️ Foggy',
-    51: '🌧️ Light Drizzle',
-    53: '🌧️ Moderate Drizzle',
-    55: '🌧️ Heavy Drizzle',
-    61: '🌧️ Slight Rain',
-    63: '🌧️ Moderate Rain',
-    65: '🌧️ Heavy Rain',
-    71: '❄️ Slight Snow',
-    73: '❄️ Moderate Snow',
-    75: '❄️ Heavy Snow',
-    77: '❄️ Snow Grains',
-    80: '🌧️ Slight Rain Showers',
-    81: '🌧️ Moderate Rain Showers',
-    82: '🌧️ Violent Rain Showers',
-    85: '❄️ Slight Snow Showers',
-    86: '❄️ Heavy Snow Showers',
-    95: '⛈️ Thunderstorm',
-    96: '⛈️ Thunderstorm with Hail',
-    99: '⛈️ Thunderstorm with Hail'
+    0: '☀️ Dégagé',
+    1: '🌤️ Surtout dégagé',
+    2: '⛅ Partiellement nuageux',
+    3: '☁️ Nuageux',
+    45: '🌫️ Brumeux',
+    48: '🌫️ Brumeux',
+    51: '🌧️ Légère bruine',
+    53: '🌧️ Bruine modérée',
+    55: '🌧️ Bruine importante',
+    61: '🌧️ Légère pluie',
+    63: '🌧️ Pluie modérée',
+    65: '🌧️ Pluie importante',
+    71: '❄️ Légère neige',
+    73: '❄️ Neige modérée',
+    75: '❄️ Neige importante',
+    77: '❄️ Grains de neige',
+    80: '🌧️ Légères averses',
+    81: '🌧️ Averses modérées',
+    82: '🌧️ Violentes averses',
+    85: '❄️ Légères averses de neige',
+    86: '❄️ Importantes averses de neige',
+    95: '⛈️ Orage',
+    96: '⛈️ Orage avec grêle',
+    99: '⛈️ Orage avec grêle'
 };
 
 function getWeatherDescription(code) {
-    return weatherCodes[code] || '🌡️ Unknown';
+    return weatherCodes[code] || '🌡️ Inconnu';
 }
 
 async function fetchWeather() {
@@ -75,18 +75,18 @@ async function fetchWeather() {
       <div class="current-main">
         <div class="weather-icon">${weatherDesc.split(' ')[0]}</div>
         <div class="current-info">
-          <div class="location">Locarno, Switzerland</div>
+          <div class="location">Locarno, Suisse</div>
           <div class="temperature">${temp}°C</div>
           <div class="description">${weatherDesc.substring(2)}</div>
         </div>
       </div>
       <div class="current-details">
         <div class="detail">
-          <span class="label">Humidity:</span>
+          <span class="label">Humidité :</span>
           <span class="value">${humidity}%</span>
         </div>
         <div class="detail">
-          <span class="label">Wind:</span>
+          <span class="label">Vent :</span>
           <span class="value">${windKmh} km/h</span>
         </div>
       </div>
@@ -98,13 +98,14 @@ async function fetchWeather() {
         const temps = hourly.temperature_2m;
         const precipProb = hourly.precipitation_probability;
 
-        // Prepare hourly chart data (first 24 hours)
-        const hourlyLabels = times.slice(0, 24).map(t => {
+        // Prepare hourly chart data (first 24 hours, every 2 hours)
+        const hourlySlice = times.slice(0, 24).filter((_, index) => index % 2 === 0);
+        const hourlyLabels = hourlySlice.map(t => {
             const time = new Date(t);
             return time.getHours().toString().padStart(2, '0') + ':00';
         });
-        const hourlyTemps = temps.slice(0, 24);
-        const hourlyPrecip = precipProb.slice(0, 24);
+        const hourlyTemps = temps.slice(0, 24).filter((_, index) => index % 2 === 0);
+        const hourlyPrecip = precipProb.slice(0, 24).filter((_, index) => index % 2 === 0);
 
         renderHourlyChart(hourlyLabels, hourlyTemps, hourlyPrecip);
 
@@ -128,7 +129,7 @@ async function fetchWeather() {
 
     } catch (error) {
         console.error('Weather fetch failed:', error);
-        errorEl.innerHTML = `<p>❌ Failed to fetch weather data: ${error.message}</p>`;
+        errorEl.innerHTML = `<p>❌ Impossible de charger les données météo : ${error.message}</p>`;
         errorEl.style.display = 'block';
         loadingEl.style.display = 'none';
         currentEl.innerHTML = '';
@@ -150,31 +151,33 @@ function renderChart(labels, maxTemps, minTemps, precipitation) {
             labels: labels,
             datasets: [
                 {
-                    label: 'Max Temperature (°C)',
+                    label: 'Température max (°C)',
                     data: maxTemps,
                     borderColor: '#ff6b6b',
                     backgroundColor: 'rgba(255, 107, 107, 0.1)',
                     borderWidth: 2,
                     fill: false,
                     tension: 0.4,
-                    pointRadius: 5,
+                    pointRadius: 3,
+                    pointHoverRadius: 5,
                     pointBackgroundColor: '#ff6b6b',
                     yAxisID: 'y'
                 },
                 {
-                    label: 'Min Temperature (°C)',
+                    label: 'Température min (°C)',
                     data: minTemps,
                     borderColor: '#4ecdc4',
                     backgroundColor: 'rgba(78, 205, 196, 0.1)',
                     borderWidth: 2,
                     fill: false,
                     tension: 0.4,
-                    pointRadius: 5,
+                    pointRadius: 2,
+                    pointHoverRadius: 5,
                     pointBackgroundColor: '#4ecdc4',
                     yAxisID: 'y'
                 },
                 {
-                    label: 'Precipitation (mm)',
+                    label: 'Précipitations (mm)',
                     data: precipitation,
                     borderColor: '#95a5a6',
                     backgroundColor: 'rgba(149, 165, 166, 0.2)',
@@ -182,7 +185,8 @@ function renderChart(labels, maxTemps, minTemps, precipitation) {
                     borderDash: [5, 5],
                     fill: true,
                     tension: 0.4,
-                    pointRadius: 4,
+                    pointRadius: 2,
+                    pointHoverRadius: 5,
                     pointBackgroundColor: '#95a5a6',
                     yAxisID: 'y1'
                 }
@@ -208,7 +212,7 @@ function renderChart(labels, maxTemps, minTemps, precipitation) {
                 },
                 title: {
                     display: true,
-                    text: '7-Day Weather Forecast',
+                    text: 'Prévisions météo 7 jours',
                     font: {
                         size: 14,
                         weight: 'bold'
@@ -223,7 +227,7 @@ function renderChart(labels, maxTemps, minTemps, precipitation) {
                     position: 'left',
                     title: {
                         display: true,
-                        text: 'Temperature (°C)',
+                        text: 'Température (°C)',
                         font: {
                             size: 12,
                             weight: 'bold'
@@ -238,7 +242,7 @@ function renderChart(labels, maxTemps, minTemps, precipitation) {
                     position: 'right',
                     title: {
                         display: true,
-                        text: 'Precipitation (mm)',
+                        text: 'Probabilité de précipitation (%)',
                         font: {
                             size: 12,
                             weight: 'bold'
@@ -269,19 +273,20 @@ function renderHourlyChart(labels, temperatures, precipitation) {
             labels: labels,
             datasets: [
                 {
-                    label: 'Temperature (°C)',
+                    label: 'Température (°C)',
                     data: temperatures,
                     borderColor: '#f39c12',
                     backgroundColor: 'rgba(243, 156, 18, 0.1)',
                     borderWidth: 2,
                     fill: true,
                     tension: 0.4,
-                    pointRadius: 4,
+                    pointRadius: 2,
+                    pointHoverRadius: 5,
                     pointBackgroundColor: '#f39c12',
                     yAxisID: 'y'
                 },
                 {
-                    label: 'Precipitation Probability (%)',
+                    label: 'Probabilité de précipitation (%)',
                     data: precipitation,
                     borderColor: '#3498db',
                     backgroundColor: 'rgba(52, 152, 219, 0.15)',
@@ -289,7 +294,8 @@ function renderHourlyChart(labels, temperatures, precipitation) {
                     borderDash: [5, 5],
                     fill: true,
                     tension: 0.4,
-                    pointRadius: 3,
+                    pointRadius: 2,
+                    pointHoverRadius: 5,
                     pointBackgroundColor: '#3498db',
                     yAxisID: 'y1'
                 }
@@ -321,7 +327,7 @@ function renderHourlyChart(labels, temperatures, precipitation) {
                 x: {
                     title: {
                         display: true,
-                        text: 'Time (Hours)',
+                        text: 'Heure',
                         font: {
                             size: 12,
                             weight: 'bold'
@@ -334,7 +340,7 @@ function renderHourlyChart(labels, temperatures, precipitation) {
                     position: 'left',
                     title: {
                         display: true,
-                        text: 'Temperature (°C)',
+                        text: 'Température (°C)',
                         font: {
                             size: 12,
                             weight: 'bold'
@@ -349,7 +355,7 @@ function renderHourlyChart(labels, temperatures, precipitation) {
                     position: 'right',
                     title: {
                         display: true,
-                        text: 'Precipitation (%)',
+                        text: 'Probabilité de précipitation (%)',
                         font: {
                             size: 12,
                             weight: 'bold'
